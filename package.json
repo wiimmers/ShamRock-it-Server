@@ -1,0 +1,18 @@
+{
+  "name": "node-server",
+  "version": "1.0.0",
+  "description": "basic node server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Nick Wimmers",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.3",
+    "node-fetch": "^3.3.2",
+    "sqlite3": "^5.1.7"
+  }
+}
