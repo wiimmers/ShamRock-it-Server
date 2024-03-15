@@ -1,24 +1,20 @@
 /*
-    ShamRock-iTV Webhook Node.js server
+    ShamRock-it Server Node.js server
     Author: Nick Wimmers
-
-    Node.js portion ready for deployment, 
-    Ninja says that ticketing updates will be available 2nd half of 2024.
-    Once this happens, adjust ninjaAuth function to configure webhook.
-
-    Needs logic, based on how JSON data is sent for tickets, 
-    to delete tickets from database if they move from NEW to: 
-    1. DELETED
-    2. OPEN
-    3. CLOSED 
-
-    Can be built as Docker image and deployed in a container
-
-    Email support for sliding refresh token for this app.
-    
-    Run npm install to install required packages then node index.js to start server 
-
-    Need nvm to install node.js and npm
+    ---
+    Functionality: 
+    Tickets created in ShamRock-it receive a response message from Ninja giving the ticket id and other details.
+    ShamRock-it sends this data to this server to be monitored and manipulated as ticket statuses are updated within Ninja.
+    The server sends multiple requests to the Ninja RMM API endpoint using the ticketId stored in the database.
+    If the status column from the database is different from the status value in the Ninja response, the database will be updated.
+    If the ticket is marked as RESOLVED it will delete the ticket from the database. This data can be reached at the /tickets path,
+    and is mainly used to serve ShamRock-iTV to display ticket data on a Tizen OS Samsung TV. 
+    ---
+    TODO:
+    Use ShamRock-it server to house credentials for ShamRock-it. Credentials are encrypted and are decrypted at runtime by ShamRock-it,
+    but are currently stored on the users machine. ShamRock-it server could also be used to show ticket updates to the end user within the app, 
+    by sending a GET request to the same endpoint as ShamRock-iTV at path /tickets. This could keep users up to date about their ticket statuses,
+    as well as give them their ticket number within the app if they have any questions regarding the ticket. 
 */
 
 const express = require('express'); 
@@ -31,15 +27,15 @@ const port = 80;
 
 // Get access token with refresh token when app is started 
 (async () => {
+    // Create SQLite table at application start
     await createTable('ticketNo,pcId,subject,name,email,ext,status')
-
+    // Get access token at application start
     var accessToken = await getAccess(); 
-    var ticketStatuses
-
+    // Interval set for nearly an hour to get a new access token
     const accessInterval = setInterval( async () => {
         accessToken = await getAccess();
     }, 3599999)
-
+    // Update ticket statuses every 5 seconds 
     const ticketStatusInterval = setInterval ( async () => {
         await ticketStatus(accessToken)
     }, 5000)
@@ -50,17 +46,14 @@ const port = 80;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configure CORS to allow any origin and header to skip ngrok browser warning
-// Upon deployment at a real domain, adjust allowed headers and origin accordingly
+// Configure CORS to allow any origin
+// Upon deployment, adjust allowed headers and origin accordingly
 // Origin may change based on how to configure TV IP to access. 
 app.use(cors({
-    origin: '*',
-    allowedHeaders: 'ngrok-skip-browser-warning'
+    origin: '*'
 }));
 
 // Receive POST request from ShamRock-it
-
-// May need to adjust how the JSON data is handled when ticket info is sent via webhook
 app.post('/webhook', (req, res) => {
     let data = req.body;
 
@@ -79,7 +72,7 @@ app.post('/webhook', (req, res) => {
 
     // Take keys and values from JSON and insert them accordingly into SQLite database
     insertRows(keys,values);
-
+    
     res.status(200).send();
 });
 

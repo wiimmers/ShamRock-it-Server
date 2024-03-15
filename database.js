@@ -26,6 +26,7 @@ async function insertRows(keys, values) {
 }
 exports.insertRows = insertRows;
 
+// Exports ticket ids as an array 
 async function getTickets() {
     await db.run("CREATE TABLE IF NOT EXISTS tickets(ticketNo,pcId,subject,name,email,ext,status)");
     let select = "SELECT ticketNo FROM tickets";
