@@ -1,6 +1,9 @@
 const { getTickets } = require('./database');
 const { db } = require('./database')
 
+const clientId = process.argv[2]
+const refreshToken = process.argv[3]
+
 // Get access_token from refresh_token and send to NinjaAuth to keep the webhook open
 // Interval set to run this function 'almost' every hour (3599999 milliseconds)
 async function getAccess() {
@@ -16,8 +19,8 @@ async function getAccess() {
         // Future update, add these as args at container start
         body: new URLSearchParams({
             grant_type: 'refresh_token',
-            client_id: 'xxxxxx',
-            refresh_token: 'xxxxxx'
+            client_id: `${clientId}`,
+            refresh_token: `${refreshToken}`
         })
     };
     const response = await fetch(auth, options);

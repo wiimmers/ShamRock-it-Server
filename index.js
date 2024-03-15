@@ -27,6 +27,14 @@ const port = 80;
 
 // Get access token with refresh token when app is started 
 (async () => {
+    // Check for environment args 
+    if (process.argv.length < 4) {
+        console.error('Expected two arguments: Client ID and Refresh Token')
+        process.exit(1)
+    } else if (process.argv.length > 4) {
+        console.error('Extraneous argument, only expected: Client ID and Refresh Token')
+        process.exit(1)
+    }
     // Create SQLite table at application start
     await createTable('ticketNo,pcId,subject,name,email,ext,status')
     // Get access token at application start
