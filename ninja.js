@@ -1,5 +1,11 @@
-const { getTickets } = require('./database');
-const { db } = require('./database')
+/* 
+    Ninja.js
+    Houses methods for getting access tokens and getting statuses of tickets at the 
+    API endpoint. 
+*/
+
+
+const { db, getTickets, getStatus } = require('./database');
 
 const clientId = process.argv[2]
 const refreshToken = process.argv[3]
@@ -15,8 +21,7 @@ async function getAccess() {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        // Enter client id and refresh token in the placeholders 
-        // Future update, add these as args at container start
+        // Enter client id and refresh token as arguments to start 
         body: new URLSearchParams({
             grant_type: 'refresh_token',
             client_id: `${clientId}`,
@@ -62,44 +67,42 @@ async function ticketStatus(token) {
 
         // Fetch Ninja Ticket data 
         const response = await fetch(idEndpoint, options);
+        const statusCode = await response.status; 
         const data = await response.json();
 
-        // Create new object that holds just the ID and the status from the returned data
-        let statusObject = {
-            'id': data.id,
-            'status': data.status.name
-        };
+        if (statusCode === 200) {
+            // Create new object that holds just the ID and the status from the returned data
+            let statusObject = {
+                'id': data.id,
+                'status': data.status.name
+            };
 
-        let selectSql = "SELECT status FROM tickets WHERE ticketNo = '" + statusObject.id + "'"
-        let setSql = "UPDATE tickets SET status = '" + statusObject.status + "' WHERE ticketNo = '" + statusObject.id + "'"
-        let deleteSql = "DELETE FROM tickets WHERE ticketNo = '" + statusObject.id  + "'"
+            let setSql = "UPDATE tickets SET status = '" + statusObject.status + "' WHERE ticketNo = '" + statusObject.id + "'"
+            let deleteSql = "DELETE FROM tickets WHERE ticketNo = '" + statusObject.id  + "'"
 
-        // Select ticket from table and set its status as variable status 
-        var status = await new Promise((resolve, reject) => {
-            db.get(selectSql, (err, rows) => {
-                if(err){
-                    reject()
-                } else {
-                    resolve(rows.status); 
-                }
-            });
-        });
+            // Select ticket from table and set its status as variable status 
+            var status = await getStatus(statusObject.id); 
 
-        // statusObject and status are separate sets of data. 
-        // statusObject gets the ticket data from Ninja and will be the most up to date
-        // status is what is found in the table from the database and is what will be manipulated
-        if (status !== statusObject.status) {
-            // If they are not the same the table will be updated with the statusObject values
-            console.log('Setting ticket ' + statusObject.id + ' to ' + statusObject.status)
-            db.run(setSql) // Command to set the value in the table
-        } else if (status == 'RESOLVED') {
-            // If they are not the same and the status is RESOLVED, delete the ticket from the table
-            // This is so it is no longer displayed on the TV app that uses this data
-            // However, if the ticket is switched back from resolved to another state it will not appear on the TV
-            console.log('Ticket ' + statusObject.id + ' has been resolved')
+            // statusObject and status are separate sets of data. 
+            // statusObject gets the ticket data from Ninja and will be the most up to date
+            // status is what is found in the table from the database and is what will be manipulated
+            if (await status !== statusObject.status) {
+                // If they are not the same the table will be updated with the statusObject values
+                console.log('Setting ticket ' + statusObject.id + ' to ' + statusObject.status)
+                db.run(setSql) // Command to set the value in the table
+            } else if (await status == 'CLOSED') {
+                // If they are not the same and the status is CLOSED, delete the ticket from the table
+                // This is so it is no longer displayed on the TV app that uses this data
+                console.log('Ticket ' + statusObject.id + ' has been closed')
+                db.run(deleteSql)
+            }
+
+        } else {
+            console.log('Ticket ' + id + ' does not exist, deleting')
+            let deleteSql = "DELETE FROM tickets WHERE ticketNo = '" + id  + "'"
             db.run(deleteSql)
+            console.log('Deleted ticket ' + id)
         }
-
     }
 }
 exports.ticketStatus = ticketStatus

@@ -1,3 +1,8 @@
+/*
+    Database.js 
+    Houses all the methods for manipulating and viewing the status of tickets within
+    SQLite db, ticket.db
+*/
 const sqlite3 = require('sqlite3').verbose(); 
 const db = new sqlite3.Database('./ticket.db');
 exports.db = db;
@@ -45,3 +50,21 @@ async function getTickets() {
 
 }
 exports.getTickets = getTickets;
+
+// Finds ticket status based on ticketNo 
+async function getStatus(id) {
+    let selectSql = "SELECT status FROM tickets WHERE ticketNo = '" + id + "'"
+    return await new Promise((resolve, reject) => {
+        db.get(selectSql, (err, rows) => {
+            if(err) {
+                reject(err)
+            } else {
+                if (rows !== undefined) {
+                    resolve(rows.status); 
+                } else {
+                    reject(-1);
+                }
+            }
+        });
+    });
+} exports.getStatus = getStatus;
