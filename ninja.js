@@ -10,6 +10,9 @@ const { db, getTickets, getStatus } = require('./database');
 const clientId = process.argv[2]
 const refreshToken = process.argv[3]
 
+console.log(clientId)
+console.log(refreshToken)
+
 // Get access_token from refresh_token and send to NinjaAuth to keep the webhook open
 // Interval set to run this function 'almost' every hour (3599999 milliseconds)
 async function getAccess() {
@@ -97,11 +100,13 @@ async function ticketStatus(token) {
                 db.run(deleteSql)
             }
 
-        } else {
+        } else if (statusCode === 404) {
             console.log('Ticket ' + id + ' does not exist, deleting')
             let deleteSql = "DELETE FROM tickets WHERE ticketNo = '" + id  + "'"
             db.run(deleteSql)
             console.log('Deleted ticket ' + id)
+        } else if (statusCode === 401) {
+            console.log('Not authenticated, fetch new token')
         }
     }
 }

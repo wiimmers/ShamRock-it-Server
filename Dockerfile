@@ -14,4 +14,4 @@ COPY ./ .
 
 EXPOSE 80
 
-CMD ["sh", "-c", "node index.js '${CLIENT_ID}' '${REFRESH_TOKEN}'"]
+CMD ["sh", "-c", "node index.js ${CLIENT_ID} ${REFRESH_TOKEN}"]
