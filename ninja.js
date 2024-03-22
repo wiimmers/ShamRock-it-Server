@@ -37,9 +37,10 @@ async function getAccess() {
     console.log('Status ' + response.status)
     if (response.status == 200) {
         console.log('Successful access token fetch')
-    } else (
+    } else {
         console.log('Failed to fetch access token')
-    )
+        accessToken = getAccess()
+    }   
     
     // Returns access token
     return data.access_token;
@@ -107,6 +108,7 @@ async function ticketStatus(token) {
             console.log('Deleted ticket ' + id)
         } else if (statusCode === 401) {
             console.log('Not authenticated, fetch new token')
+            accessToken = getAccess()
         }
     }
 }
