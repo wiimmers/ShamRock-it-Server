@@ -11,10 +11,6 @@
     and is mainly used to serve ShamRock-iTV to display ticket data on a Tizen OS Samsung TV. Dockerfile included for building a
     docker image.
     ---
-    TODO:
-    Use ShamRock-it server to house credentials for ShamRock-it. Credentials are encrypted and are decrypted at runtime by ShamRock-it,
-    but are currently stored on the users machine. 
-    ---
     Index.js 
     Utilizes express.js to setup multiple endpoints at different paths. 
     Paths:
@@ -28,6 +24,8 @@
     /status     = an endpoint for ShamRock-it to show the end user their current tickets and compare their status with 
     the status within ticket.db. Allows for updates on ticket status so the user knows their status, as well as their 
     ticket number to reference if they have any questions. 
+
+    /creds      = an endpoint for ShamRock-it to receive credentials for Ninja Authorization without storing them on the client machine
 */
 
 const express = require('express'); 
@@ -36,6 +34,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const { insertRows, db, createTable, getStatus } = require('./database');
 const { getAccess, ticketStatus } = require('./ninja');
+// const { readFile } = require('fs/promises');
 const port = 80;  
 
 // Get access token with refresh token when app is started 
@@ -124,6 +123,13 @@ app.get('/tickets', (req, res) => {
 // Main site, simply shows index.html
 app.get('/', (req, res) => {
     res.sendFile('index.html', {root: __dirname})
+});
+
+// Sending credentials to ShamRock-it
+app.get('/creds', (req, res) => {
+    
+    res.sendFile('assets', {root: __dirname})
+
 });
 
 // Open port declared above to listen for requests
