@@ -132,6 +132,10 @@ app.get('/creds', (req, res) => {
 
 });
 
+app.get('/ios', (req, res) => {
+    //TODO: Add endpoint for iOS app to get ninja creds
+});
+
 // Open port declared above to listen for requests
 app.listen(port, () => {
     console.log(`Now listening on port ${port}`); 
