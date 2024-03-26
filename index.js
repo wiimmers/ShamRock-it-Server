@@ -26,6 +26,9 @@
     ticket number to reference if they have any questions. 
 
     /creds      = an endpoint for ShamRock-it to receive credentials for Ninja Authorization without storing them on the client machine
+
+    /ios        = send authentication credentials to ios app
+
 */
 
 const express = require('express'); 
@@ -33,8 +36,7 @@ const app = express();
 const cors = require('cors'); 
 const bodyParser = require('body-parser');
 const { insertRows, db, createTable, getStatus } = require('./database');
-const { getAccess, ticketStatus } = require('./ninja');
-// const { readFile } = require('fs/promises');
+const { getAccess, ticketStatus, clientId, refreshToken } = require('./ninja');
 const port = 80;  
 
 // Get access token with refresh token when app is started 
@@ -63,7 +65,7 @@ const port = 80;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(express.static(__dirname + '/public'));
 // Configure CORS to allow any origin
 // Upon deployment, adjust allowed headers and origin accordingly
 // Origin may change based on how to configure TV IP to access. 
@@ -127,18 +129,22 @@ app.get('/', (req, res) => {
 
 // Sending credentials to ShamRock-it
 app.get('/creds', (req, res) => {
-    
     res.sendFile('assets', {root: __dirname})
-
 });
 
 app.get('/ios', (req, res) => {
-    //TODO: Add endpoint for iOS app to get ninja creds
+    var credentials = {
+        'clientId': clientId, 
+        'refreshToken': refreshToken
+    }; 
+
+    res.json(credentials)
 });
 
 // Open port declared above to listen for requests
 app.listen(port, () => {
     console.log(`Now listening on port ${port}`); 
 });
+
 
 

@@ -7,8 +7,11 @@
 
 const { db, getTickets, getStatus } = require('./database');
 
+// Takes clientId and refreshToken as args from node start
 const clientId = process.argv[2]
 const refreshToken = process.argv[3]
+exports.clientId = clientId; 
+exports.refreshToken = refreshToken; 
 
 console.log(clientId)
 console.log(refreshToken)
